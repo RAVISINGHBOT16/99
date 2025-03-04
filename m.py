@@ -19,7 +19,7 @@ CHANNEL_USERNAME = "@KHAPITAR_BALAK77"
 
 # Attack settings
 ATTACK_LIMIT = 10  # Max attacks per day
-𝐌𝐀𝐗 𝘾𝙃𝙐𝘿𝘼𝙄 𝐃𝐔𝐑𝐀𝐓𝐈𝐎𝐍 = 180𝐬!
+
 # Global attack tracker
 is_attack_running = False  # Track if an attack is running
 pending_feedback = {}  # Users who need to send screenshots
