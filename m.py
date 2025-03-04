@@ -97,12 +97,11 @@ def handle_attack(message):
     is_attack_running = True
     pending_feedback[user_id] = True  # Require screenshot
 
-    bot.send_message(message.chat.id, 👤 **User:** @{user_name} 🚀\n"
-                                                        f"💥 **𝐀𝐓𝐓𝐀𝐂𝐊 𝐒𝐓𝐀𝐑𝐓𝐄𝐃!** 💥\n"
-                                                        f"🎯 **𝐓𝐀𝐑𝐆𝐄𝐓:** `{target} : {port}`\n"
-                                                        f"⏳ **𝐃𝐔𝐑𝐀𝐓𝐈𝐎𝐍:** {time_duration}𝙨\n"
-                                                        f"⚡ **𝐑𝐄𝐌𝐀𝐈𝐍𝐈𝐍𝐆 𝐀𝐓𝐓𝐀𝐂𝐊𝐒:** {remaining_attacks}\n"
-                                                        f"📸 **𝐆𝐀𝐌𝐄 𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐁𝐇𝐄𝐉 𝐃𝐄!**\n"
+    bot.send_message(message.chat.id, f"💥 **𝐀𝐓𝐓𝐀𝐂𝐊 𝐒𝐓𝐀𝐑𝐓𝐄𝐃!** 💥\n"
+                                                                        f"🎯 **𝐓𝐀𝐑𝐆𝐄𝐓:** `{target} : {port}`\n"
+                                                                        f"⏳ **𝐃𝐔𝐑𝐀𝐓𝐈𝐎𝐍:** {time_duration}𝙨\n"
+                                                                        f"⚡ **𝐑𝐄𝐌𝐀𝐈𝐍𝐈𝐍𝐆 𝐀𝐓𝐓𝐀𝐂𝐊𝐒:** {remaining_attacks}\n"
+                                                                        f"📸 **𝐆𝐀𝐌𝐄 𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐁𝐇𝐄𝐉 𝐃𝐄!**\n"
     try:
         subprocess.run(f"./megoxer {target} {port} {time_duration} 900", shell=True, check=True)
     except subprocess.CalledProcessError as e:
