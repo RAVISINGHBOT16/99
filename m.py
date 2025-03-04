@@ -57,7 +57,7 @@ def is_user_in_channel(user_id):
     except:
         return False
 
-@bot.message_handler(commands=['attack'])
+@bot.message_handler(commands=['RS'])
 def handle_attack(message):
     user_id = str(message.from_user.id)
     command = message.text.split()
