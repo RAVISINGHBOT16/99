@@ -124,6 +124,20 @@ def handle_attack(message):
     is_attack_running = False
     attack_end_time = None
 
+# Handle screenshot submission and forward to main channel
+@bot.message_handler(content_types=['photo'])
+def handle_screenshot(message):
+    user_id = str(message.from_user.id)
+    
+    if pending_feedback.get(user_id, False):
+        bot.forward_message(CHANNEL_USERNAME, message.chat.id, message.message_id)  
+        bot.send_message(CHANNEL_USERNAME, f"📸 **User `{user_id}` ka screenshot hai!**")
+
+        bot.reply_to(message, "✅ **Screenshot mil gaya! Ab tu naya attack laga sakta hai.** 🚀")
+        del pending_feedback[user_id]  
+    else:
+        bot.reply_to(message, "❌ **Ab screenshot bhejne ki zaroorat nahi hai!**")
+
 @bot.message_handler(commands=['check'])
 def handle_check(message):
     if is_attack_running and attack_end_time:
