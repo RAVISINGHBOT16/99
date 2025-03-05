@@ -43,6 +43,7 @@ def update_attack_status(chat_id, message_id):
         if remaining_time <= 0:
             bot.edit_message_text(chat_id=chat_id, message_id=message_id, text="✅ **Attack Khatam! Ab screenshot bhej!** 📸")
             is_attack_running = False
+            attack_end_time = None  # ✅ Fix added here
             return
         try:
             bot.edit_message_text(chat_id=chat_id, message_id=message_id, 
@@ -108,7 +109,6 @@ def handle_attack(message):
     update_thread = threading.Thread(target=update_attack_status, args=(message.chat.id, msg.message_id))
     update_thread.start()
 
-    
     bot.send_message(message.chat.id, f"🚀 **Attack Shuru!**\n🎯 `{target}:{port}`\n⏳ {time_duration}s👇BETA SCREENSHOT BHEJ AB", parse_mode="Markdown")
 
     try:
@@ -117,12 +117,14 @@ def handle_attack(message):
         bot.reply_to(message, "❌ **Attack fail ho gaya!**")
         is_attack_running = False
         attack_end_time = None
+        update_thread = None  # ✅ Fix added here
         return
 
     bot.send_message(message.chat.id, "✅ **Attack Khatam!** 🎯\n📸 **Ab screenshot bhej, warna agla attack nahi milega!**")
 
     is_attack_running = False
     attack_end_time = None
+    update_thread = None  # ✅ Fix added here
 
 # Handle check status button click
 @bot.callback_query_handler(func=lambda call: call.data == 'check_status')
