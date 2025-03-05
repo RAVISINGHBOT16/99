@@ -109,11 +109,12 @@ def handle_attack(message):
     update_thread.start()
 
     bot.send_message(message.chat.id, f"💥 **𝐀𝐓𝐓𝐀𝐂𝐊 𝐒𝐓𝐀𝐑𝐓𝐄𝐃!** 💥\n"
-                                                        f"🎯 **𝐓𝐀𝐑𝐆𝐄𝐓:** `{target} : {port}`\n"
-                                                        f"⏳ **𝐃𝐔𝐑𝐀𝐓𝐈𝐎𝐍:** {time_duration}𝙨\n"
-                                                        f"⚡ **𝐑𝐄𝐌𝐀𝐈𝐍𝐈𝐍𝐆 𝐀𝐓𝐓𝐀𝐂𝐊𝐒:** {remaining_attacks}\n"
-                                                        f"📸 **𝐆𝐀𝐌𝐄 𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐁𝐇𝐄𝐉 𝐃𝐄!**\n"
-                                                        f"📸 **OYE BSDK SCREENSHOT DE!**\n"  
+                                        f"🎯 **𝐓𝐀𝐑𝐆𝐄𝐓:** `{target} : {port}`\n"
+                                        f"⏳ **𝐃𝐔𝐑𝐀𝐓𝐈𝐎𝐍:** {time_duration}𝙨\n"
+                                        f"⚡ **𝐑𝐄𝐌𝐀𝐈𝐍𝐈𝐍𝐆 𝐀𝐓𝐓𝐀𝐂𝐊𝐒:** {remaining_attacks}\n"
+                                        f"📸 **𝐆𝐀𝐌𝐄 𝐒𝐂𝐑𝐄𝐄𝐍𝐒𝐇𝐎𝐓 𝐁𝐇𝐄𝐉 𝐃𝐄!**\n"
+                                        f"📸 **OYE BSDK SCREENSHOT DE!**\n"  
+                                        parse_mode="Markdown")
     try:
         subprocess.run(f"./megoxer {target} {port} {time_duration} 900", shell=True, check=True)
     except subprocess.CalledProcessError:
