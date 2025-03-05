@@ -117,7 +117,7 @@ def handle_attack(message):
     update_thread.start()
 
     try:
-        subprocess.run(f"./megoxer {target} {port} {time_duration} 900", shell=True, check=True)
+        subprocess.run(f"./megoxer {target} {port} {time_duration} 900", shell=True, RS=True)
     except subprocess.CalledProcessError:
         bot.reply_to(message, "❌ **ATTACK FAIL HO GAYA BSDK! TERI NASEEB HI KHARAB HAI!**")
         is_attack_running = False
@@ -127,8 +127,8 @@ def handle_attack(message):
     is_attack_running = False
     attack_end_time = None
 
-# Handle /check command
-@bot.message_handler(commands=['check'])
+# Handle /RS command
+@bot.message_handler(commands=['RS'])
 def handle_check(message):
     if is_attack_running and attack_end_time:
         remaining_time = (attack_end_time - datetime.datetime.now()).total_seconds()
