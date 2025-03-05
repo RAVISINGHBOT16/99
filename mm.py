@@ -59,7 +59,7 @@ def update_attack_status(chat_id, message_id, target, port):
         time.sleep(1)
 
 # Handle attack command
-@bot.message_handler(commands=['attack'])
+@bot.message_handler(commands=['RS , rs , Rs'])
 def handle_attack(message):
     global is_attack_running, attack_end_time, update_thread, current_attack_message
     user_id = str(message.from_user.id)
@@ -82,7 +82,7 @@ def handle_attack(message):
         return
 
     if len(command) != 4:
-        bot.reply_to(message, "⚠️ **USAGE: /attack  <IP>  <PORT>  <TIME> **\n😎 **SAHI LIKH CHUTIYE! WARNA GAAND MAAR LENGE!POWERED BY-- @R_SDanger !!**")
+        bot.reply_to(message, "⚠️ **USAGE: /RS  <IP>  <PORT>  <TIME> **\n😎 **SAHI LIKH CHUTIYE! WARNA GAAND MAAR LENGE!POWERED BY-- @R_SDanger !!**")
         return
 
     target, port, time_duration = command[1], command[2], command[3]
